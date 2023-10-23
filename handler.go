@@ -8,7 +8,6 @@ type Handler http.HandlerFunc
 
 type callback func(http.Server)
 
-type fn func()
 
 func methodNotAllowedHandler(methodsAllowed ...methodTyp) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
