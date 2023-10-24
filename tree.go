@@ -1,8 +1,7 @@
 package dumbo
 
-
-
 import (
+	"net/http"
 	"strings"
 	"sync"
 )
@@ -37,7 +36,7 @@ func NewTree() *tree {
  * @param {Handler} [handler] The handler to be used
  * @returns {}
  */
-func (tr *tree) InsertNode(key string, handler Handler) {
+func (tr *tree) InsertNode(key string, handler http.HandlerFunc) {
 	if key == "" || handler == nil {
 		return
 	}
@@ -202,8 +201,8 @@ func (tr *tree) GetNode(key string) (*Node, map[string]string) {
  * @param {tree} [tre] The tree to convert
  * @returns {map[string]Handler}
  */
-func ToMap(tre *tree) map[string]Handler {
-	ma := make(map[string]Handler, tre.len)
+func ToMap(tre *tree) map[string]http.HandlerFunc {
+	ma := make(map[string]http.HandlerFunc, tre.len)
 	for _, edge := range tre.root.edges {
 		ma[edge.key] = edge.n.handler
 	}
@@ -215,7 +214,7 @@ func ToMap(tre *tree) map[string]Handler {
  * @param {map[string]Handler} [m] The hash map to insert
  * @returns {}
  */
-func (tr *tree) InsertMap(m map[string]Handler) {
+func (tr *tree) InsertMap(m map[string]http.HandlerFunc) {
 	for i, v := range m {
 		tr.InsertNode(i, v)
 	}

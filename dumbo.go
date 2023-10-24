@@ -24,6 +24,8 @@ type dumbo struct {
 	routes map[string]*tree
 
 	controllers []Controller
+
+	handler http.Handler
 }
 
 type EngineParams struct {
@@ -43,6 +45,7 @@ func Engine(e EngineParams) *dumbo {
 		errorHandler:    e.ErrorHandler,
 		pool:            &sync.Pool{},
 		state:           false,
+		handler: nil,
 		routes:  map[string]*tree{
 			"GET":     NewTree(),
 			"POST":    NewTree(),
@@ -80,6 +83,9 @@ func (d *dumbo) Shutdown(ctx context.Context) error {
 
 
 func (d*dumbo) Register(c ...Controller) {
+	if d.handler == nil {
+		d.buildHandler()
+	}
 	for _,v := range c {
 	  s := v.Schema()
 	  if(s.Get) { d.routes[http.MethodConnect].InsertNode(v.Read().Path, v.Read().Handler) }
@@ -92,4 +98,36 @@ func (d*dumbo) Register(c ...Controller) {
   
 	  if(s.Delete) { d.routes[http.MethodDelete].InsertNode(v.Delete().Path, v.Delete().Handler) }
 	}
+  }	
+
+  func (d *dumbo) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f, params := d.routes[r.Method].GetNode(r.URL.Path);
+	print(params)
+	if f != nil {
+		if err := r.ParseForm(); err != nil {
+			log.Printf("Error parsing form: %s", err)
+			return
+		}
+		if d.handler != nil {
+			d.handler.ServeHTTP(w, r)
+		}
+		f := f.handler
+		f.ServeHTTP(w, r);
+
+	} else {
+		if d.notFoundHandler != nil {
+			d.notFoundHandler.ServeHTTP(w,r)
+		}else {
+			http.NotFoundHandler().ServeHTTP(w,r)
+		}
+	}
+
+
+
   }
+ 
+
+
+func (d *dumbo) buildHandler() {
+	d.handler = chain(d.middlewares, http.HandlerFunc(middlewareHTTP))
+}

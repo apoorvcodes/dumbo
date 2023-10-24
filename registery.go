@@ -5,7 +5,7 @@ import "net/http"
 
 type Resolver struct {
 	Path string
-	Handler Handler
+	Handler http.HandlerFunc
 }
 
 type Schema struct {

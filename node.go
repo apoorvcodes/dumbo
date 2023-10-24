@@ -1,5 +1,7 @@
 package dumbo
 
+import "net/http"
+
  
 type edge struct {
 	key string
@@ -8,7 +10,7 @@ type edge struct {
 
 
 type Node struct {
-	handler  Handler
+	handler  http.HandlerFunc
 	edges    []*edge
 	priority int
 	depth    int

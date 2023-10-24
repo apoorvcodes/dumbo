@@ -4,7 +4,6 @@ import (
 	"net/http"
 )
 
-type Handler http.HandlerFunc
 
 type callback func(http.Server)
 
